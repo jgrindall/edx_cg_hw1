@@ -25,7 +25,7 @@ const vec3 upinit(0.0,1.0,0.0); // Initial up position, also for resets
 const int amountinit = 5; //Initial step amount for camera movement, also for resets
 
 bool useGlu; // Toggle use of "official" opengl/glm transform vs user code
-int w = 100, h = 500; // width and height
+int w = 500, h = 500; // width and height
 
 Grader grader;
 bool allowGrader = false; 
@@ -188,6 +188,9 @@ void init() {
 	// Set up initial position for eye,up and amount
 	// As well as booleans 
 
+	mat3 r = Transform::rotate(120, vec3(0.57735026919,0.57735026919,0.57735026919));
+	Transform::log(r);
+	
 	eye = eyeinit; 
 	up = upinit; 
 	amount = amountinit;
