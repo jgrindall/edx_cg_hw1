@@ -31,5 +31,8 @@ class Transform
 		static mat3 rodriguez2(const float degrees, const vec3& axis) ;
 		static int epsilon(int i, int j, int k);
 		static void log(mat3 m);
+	    static void log(mat4 m);
+		static void log(vec3 v);
+		static void log(vec4 v);
 };
 

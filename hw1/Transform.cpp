@@ -7,93 +7,89 @@
 
 // Please implement the following functions:
 
+inline void copyVec3(const vec3& src, vec3& dest){
+	dest.x = src.x;
+	dest.y = src.y;
+	dest.z = src.z;
+}
+
 void Transform::log(mat3 r){
 	for (int i = 0; i < 3; i++) {
-		std::cout << "col " << i << "("
-		<< r[i].x << " " << r[i].y << " " << r[i].z
-		<< ")\n";
+		Transform::log(r[i]);
 	}
-	std::cout << "\n\n\n";
+	std::cout << "\n";
 };
 
-int Transform::epsilon(int i, int j, int k){
-	// https://en.wikipedia.org/wiki/Levi-Civita_symbol
-	if(i == j || j == k || i == k){
-		return 0;
+void Transform::log(mat4 r){
+	for (int i = 0; i < 4; i++) {
+		Transform::log(r[i]);
 	}
-	// all different
-	else if(i == 0 && j == 1 && k == 2){
-		return 1;
-	}
-	else if(i == 0 && j == 2 && k == 1){
-		return -1;
-	}
-	else if(i == 1 && j == 0 && k == 2){
-		return -1;
-	}
-	else if(i == 1 && j == 2 && k == 0){
-		return 1;
-	}
-	else if(i == 2 && j == 0 && k == 1){
-		return 1;
-	}
-	else {
-		return -1;
-	}
-}
+	std::cout << "\n";
+};
 
-mat3 Transform::rodriguez0(float degrees, const vec3& axis){
-	mat3 m = mat3();
-	const float _cos = cos(degrees*pi/180);
-	for(int i = 0; i < 3; i++){
-		for(int j = 0; j < 3; j++){
-			m[i][j] = axis[i]*axis[j];
-		}
-	}
-	return (1 - _cos)*m;
-}
+void Transform::log(vec3 v){
+	std::cout << "("
+	<< v.x << " " << v.y << " " << v.z
+	<< ")\n";
+};
 
-mat3 Transform::rodriguez1(float degrees, const vec3& axis){
-	const float _cos = cos(degrees*pi/180);
-	return _cos*mat3(); // identity matrix
-}
-
-mat3 Transform::rodriguez2(float degrees, const vec3& axis){
-	const float _sin = sin(degrees*pi/180);
-	mat3 m = mat3();
-	for(int i = 0; i < 3; i++){
-		for(int j = 0; j < 3; j++){
-			m[i][j] = 0;
-			for(int k = 0; k < 3; k++){
-				m[i][j] += Transform::epsilon(i, j, k)*axis[k];
-			}
-		}
-	}
-	return _sin*m;
-}
+void Transform::log(vec4 v){
+	std::cout << "("
+	<< v.x << " " << v.y << " " << v.z << " " << v.w
+	<< ")\n";
+};
 
 // Helper rotation function.
 mat3 Transform::rotate(const float degrees, const vec3& axis) {
-	// a_ij = (1 - cos)a_i a_j + cos delta_i_j + sin epsilon(j,i,k)a_k
-	return Transform::rodriguez0(degrees, axis) + Transform::rodriguez1(degrees, axis) + Transform::rodriguez2(degrees, axis);
+	const float _cos = cos(degrees*pi/180);
+	const float _sin = sin(degrees*pi/180);
+	const float _oneMinusCos = 1 - _cos;
+	const mat3 id = mat3();
+	// build column by column, mat3(col0, col1, col2)  where col_i is the image of the basis vector e_i
+	return	_oneMinusCos*mat3(axis[0]*axis, axis[1]*axis, axis[2]*axis)
+	+		_cos*mat3()
+	+		_sin*mat3(glm::cross(axis, id[0]), glm::cross(axis, id[1]), glm::cross(axis, id[2]));
 }
 
 // Transforms the camera left around the "crystal ball" interface
 void Transform::left(float degrees, vec3& eye, vec3& up) {
-  // YOUR CODE FOR HW1 HERE
+	// up doesn't change
+	// eye is rotated using the rodriguez formula, the axis is 'up'
+	vec3 newEye = Transform::rotate(degrees, up) * eye;
+	std::cout << "eye was\n";
+	Transform::log(eye);
+	std::cout << "newEye is\n";
+	Transform::log(newEye);
+	copyVec3(newEye, eye);
+	std::cout << "eye is\n";
+	Transform::log(eye);
 }
 
 // Transforms the camera up around the "crystal ball" interface
 void Transform::up(float degrees, vec3& eye, vec3& up) {
-  // YOUR CODE FOR HW1 HERE 
+	// axis is eye cross up and both are changed
+	mat3 rot = Transform::rotate(degrees, glm::cross(eye, up));
+	vec3 newEye = rot * eye;
+	vec3 newUp = rot * up;
+	copyVec3(newEye, eye);
+	// up also changes in this one
+	copyVec3(newUp, up);
 }
 
 // Your implementation of the glm::lookAt matrix
 mat4 Transform::lookAt(vec3 eye, vec3 up) {
-  // YOUR CODE FOR HW1 HERE
-
-  // You will change this return call
-  return mat4();
+  // centre is at the origin
+  mat3 id = mat3();
+  vec3 a = eye;
+  vec3 b = up;
+  vec3 w = glm::normalize(a);
+  vec3 u = glm::normalize(glm::cross(b, w));
+  vec3 v = glm::cross(w, u);
+// apply a rotation such that 'x' goes to
+  mat3 rot = glm::transpose(mat3(u, v, w));
+  mat4 rotHomog = mat4(vec4(rot[0], 0), vec4(rot[1], 0), vec4(rot[2], 0), vec4(0, 0, 0, 1));
+  mat4 transHomog = mat4(vec4(id[0], 0), vec4(id[1], 0), vec4(id[2], 0), vec4(-1.0f*eye, 1));
+  return rotHomog*transHomog;
 }
 
 Transform::Transform()

@@ -153,6 +153,7 @@ void keyboard(unsigned char key,int x,int y) {
 //  When an arrow key is pressed, it will call your transform functions
 
 void specialKey(int key,int x,int y) {
+	cout << "" << key <<"\n";
 	switch(key) {
 		case 100: //left
 			Transform::left(amount,eye,up);
@@ -230,6 +231,7 @@ void display() {
 	else {
 		mv = Transform::lookAt(eye,up); 
 	}
+	Transform::log(mv);
 	glLoadMatrixf(&mv[0][0]); 
 
 	// Set Light and Material properties for the teapot
