@@ -26,10 +26,6 @@ class Transform
 		static void up(float degrees, vec3& eye, vec3& up);
 		static mat4 lookAt(vec3 eye, vec3 up);
 		static mat3 rotate(const float degrees, const vec3& axis) ;
-		static mat3 rodriguez0(const float degrees, const vec3& axis) ;
-		static mat3 rodriguez1(const float degrees, const vec3& axis) ;
-		static mat3 rodriguez2(const float degrees, const vec3& axis) ;
-		static int epsilon(int i, int j, int k);
 		static void log(mat3 m);
 	    static void log(mat4 m);
 		static void log(vec3 v);
